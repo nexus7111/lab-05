@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,11 +35,13 @@ fun CityListScreen(
     cities: List<City>,
     onAddCity: (City) -> Unit,
     onUpdateCity: (City, City) -> Unit,
+    onDeleteCity: (City) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var newCityName by remember { mutableStateOf("") }
     var newProvinceName by remember { mutableStateOf("") }
     var showAddCityFields by remember { mutableStateOf(false) }
+
     var selectedCity by remember { mutableStateOf<City?>(null) }
     var editedCityName by remember { mutableStateOf("") }
     var editedProvinceName by remember { mutableStateOf("") }
@@ -60,6 +65,7 @@ fun CityListScreen(
                 Text("+")
             }
         }
+
         if (showAddCityFields) {
             Row(
                 modifier = Modifier
@@ -72,9 +78,7 @@ fun CityListScreen(
                     label = { Text("City") },
                     modifier = Modifier.weight(1f)
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 OutlinedTextField(
                     value = newProvinceName,
                     onValueChange = { newProvinceName = it },
@@ -82,18 +86,11 @@ fun CityListScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Button(
                     modifier = Modifier.padding(vertical = 12.dp),
                     onClick = {
                         if (newCityName.isNotBlank() && newProvinceName.isNotBlank()) {
-                            onAddCity(
-                                City(
-                                    name = newCityName,
-                                    province = newProvinceName
-                                )
-                            )
-
+                            onAddCity(City(name = newCityName, province = newProvinceName))
                             newCityName = ""
                             newProvinceName = ""
                             showAddCityFields = false
@@ -104,6 +101,7 @@ fun CityListScreen(
                 }
             }
         }
+
         if (selectedCity != null) {
             Row(
                 modifier = Modifier
@@ -116,18 +114,14 @@ fun CityListScreen(
                     label = { Text("Updated City") },
                     modifier = Modifier.weight(1f)
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 OutlinedTextField(
                     value = editedProvinceName,
                     onValueChange = { editedProvinceName = it },
                     label = { Text("Updated Province") },
                     modifier = Modifier.weight(1f)
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Button(
                     modifier = Modifier.padding(vertical = 12.dp),
                     onClick = {
@@ -139,12 +133,8 @@ fun CityListScreen(
                         ) {
                             onUpdateCity(
                                 cityToUpdate,
-                                City(
-                                    name = editedCityName,
-                                    province = editedProvinceName
-                                )
+                                City(name = editedCityName, province = editedProvinceName)
                             )
-
                             selectedCity = null
                             editedCityName = ""
                             editedProvinceName = ""
@@ -154,7 +144,40 @@ fun CityListScreen(
                     Text("UPDATE CITY")
                 }
             }
+
+            // Participation exercise: delete the selected city.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        selectedCity = null
+                        editedCityName = ""
+                        editedProvinceName = ""
+                    }
+                ) {
+                    Text("CANCEL")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    onClick = {
+                        selectedCity?.let { onDeleteCity(it) }
+                        selectedCity = null
+                        editedCityName = ""
+                        editedProvinceName = ""
+                    }
+                ) {
+                    Text("DELETE CITY")
+                }
+            }
         }
+
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(cities) { index, city ->
                 CityRow(
@@ -176,7 +199,6 @@ fun CityListScreen(
     }
 }
 
-
 @Composable
 fun CityRow(
     city: City,
@@ -193,7 +215,6 @@ fun CityRow(
             fontSize = 30.sp,
             modifier = Modifier.weight(1f)
         )
-
         Text(
             text = city.province,
             fontSize = 30.sp,
@@ -213,7 +234,8 @@ fun CityListScreenPreview() {
                 City("Calgary", "AB")
             ),
             onAddCity = {},
-            onUpdateCity = { _, _ -> }
+            onUpdateCity = { _, _ -> },
+            onDeleteCity = {}
         )
     }
 }
